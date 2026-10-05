@@ -1,0 +1,1557 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Convert to Roman Numerals</title>
+
+  <style>
+    :root {
+      --page-bg: #f4f7fb;
+      --card: #ffffff;
+      --panel: #f8fafc;
+
+      --text: #172033;
+      --muted: #667085;
+
+      --border: #dbe2ea;
+      --border-dark: #cbd5e1;
+
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --blue-soft: #eff6ff;
+
+      --green: #166534;
+      --green-bg: #f0fdf4;
+      --green-border: #bbf7d0;
+
+      --red: #991b1b;
+      --red-bg: #fff7f7;
+      --red-border: #fecaca;
+
+      --shadow:
+        0 1px 2px rgba(16, 24, 40, 0.04),
+        0 4px 14px rgba(16, 24, 40, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+
+      background: var(--page-bg);
+      color: var(--text);
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      width: min(900px, calc(100% - 32px));
+      margin: 36px auto;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .settings-card {
+      padding: 20px 22px;
+      margin-bottom: 18px;
+    }
+
+    .practice-card {
+      padding: 28px;
+    }
+
+    /* ==================================================
+       RANGE SELECTOR
+       ================================================== */
+
+    .section-label {
+      margin-bottom: 14px;
+
+      text-align: center;
+
+      color: var(--text);
+
+      font-size: 1rem;
+      font-weight: 650;
+    }
+
+    .range-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 9px;
+    }
+
+    .range-button {
+      min-width: 100px;
+      min-height: 46px;
+
+      padding: 9px 15px;
+
+      border: 1.5px solid var(--border-dark);
+      border-radius: 10px;
+
+      background: var(--card);
+      color: var(--text);
+
+      font-weight: 650;
+
+      cursor: pointer;
+
+      transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        transform 0.08s ease;
+    }
+
+    .range-button:hover {
+      background: var(--panel);
+    }
+
+    .range-button:active {
+      transform: translateY(1px);
+    }
+
+    .range-button.active {
+      background: var(--blue-soft);
+      border-color: var(--blue);
+      color: var(--blue-dark);
+    }
+
+    .settings-note {
+      margin-top: 13px;
+
+      text-align: center;
+
+      color: var(--muted);
+
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    /* ==================================================
+       QUESTION
+       ================================================== */
+
+    .instruction {
+      text-align: center;
+
+      color: var(--muted);
+
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+
+    .number-area {
+      padding: 26px 0 24px;
+
+      text-align: center;
+    }
+
+    .problem-number {
+      display: inline-block;
+
+      color: var(--text);
+
+      font-size: clamp(4rem, 10vw, 6.2rem);
+      font-weight: 720;
+      line-height: 1;
+
+      letter-spacing: -0.04em;
+    }
+
+    /* ==================================================
+       ANSWER
+       ================================================== */
+
+    .answer-label {
+      display: block;
+
+      margin-bottom: 7px;
+
+      text-align: center;
+
+      color: var(--muted);
+
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .answer-area {
+      display: flex;
+      justify-content: center;
+    }
+
+    .answer-input {
+      width: min(100%, 360px);
+      min-height: 58px;
+
+      padding: 8px 14px;
+
+      border: 1.5px solid var(--border-dark);
+      border-radius: 11px;
+
+      background: var(--card);
+      color: var(--text);
+
+      text-align: center;
+
+      text-transform: uppercase;
+
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+      font-size: 1.55rem;
+      font-weight: 750;
+
+      letter-spacing: 0.08em;
+
+      transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease;
+    }
+
+    .answer-input:focus {
+      outline: none;
+
+      border-color: var(--blue);
+
+      box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .answer-input.correct-input {
+      border-color: #22c55e;
+      background: #f7fff9;
+    }
+
+    .answer-input.incorrect-input {
+      border-color: #ef4444;
+      background: #fffafa;
+    }
+
+    /* ==================================================
+       CONTROLS
+       ================================================== */
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+
+      margin-top: 24px;
+    }
+
+    .control-button {
+      min-height: 48px;
+
+      padding: 10px 22px;
+
+      border-radius: 10px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+
+      transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.08s ease;
+    }
+
+    .control-button:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .check-button {
+      border: 1px solid var(--blue);
+
+      background: var(--blue);
+      color: white;
+    }
+
+    .check-button:hover:not(:disabled) {
+      background: var(--blue-dark);
+    }
+
+    .next-button {
+      border: 1px solid var(--border-dark);
+
+      background: var(--card);
+      color: var(--text);
+    }
+
+    .next-button:hover {
+      background: var(--panel);
+    }
+
+    .control-button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    /* ==================================================
+       FEEDBACK
+       ================================================== */
+
+    .feedback {
+      display: none;
+
+      max-width: 760px;
+      margin: 22px auto 0;
+
+      border-radius: 14px;
+
+      overflow: hidden;
+    }
+
+    .feedback.correct {
+      display: block;
+
+      padding: 16px 18px;
+
+      border: 1px solid var(--green-border);
+
+      background: var(--green-bg);
+      color: var(--green);
+    }
+
+    .feedback.incorrect {
+      display: block;
+
+      border: 1px solid var(--red-border);
+
+      background: var(--red-bg);
+      color: var(--text);
+    }
+
+    .feedback-heading {
+      padding: 16px 18px;
+
+      color: var(--red);
+      line-height: 1.5;
+    }
+
+    /* ==================================================
+       EXPLANATION
+       ================================================== */
+
+    .explanation {
+      padding: 18px;
+
+      border-top: 1px solid var(--red-border);
+
+      background: white;
+    }
+
+    .explanation-title {
+      margin-bottom: 13px;
+
+      color: var(--text);
+
+      font-size: 0.96rem;
+      font-weight: 750;
+    }
+
+    .roman-steps {
+      display: grid;
+      gap: 9px;
+    }
+
+    .roman-step {
+      display: grid;
+      grid-template-columns:
+        minmax(100px, 0.9fr)
+        34px
+        minmax(100px, 1fr);
+
+      align-items: center;
+
+      gap: 8px;
+
+      padding: 11px 13px;
+
+      border: 1px solid var(--border);
+      border-radius: 10px;
+
+      background: var(--panel);
+    }
+
+    .step-value {
+      text-align: right;
+
+      color: var(--text);
+
+      font-weight: 750;
+    }
+
+    .step-arrow {
+      text-align: center;
+
+      color: var(--muted);
+
+      font-weight: 700;
+    }
+
+    .step-symbol {
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+      color: var(--blue-dark);
+
+      font-size: 1.15rem;
+      font-weight: 800;
+
+      letter-spacing: 0.06em;
+    }
+
+    .final-result {
+      margin-top: 13px;
+
+      padding: 13px 15px;
+
+      border-radius: 10px;
+
+      background: var(--blue-soft);
+
+      text-align: center;
+
+      color: var(--text);
+
+      font-size: 1.05rem;
+      font-weight: 750;
+      line-height: 1.6;
+    }
+
+    .roman-text {
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+      font-weight: 800;
+      letter-spacing: 0.07em;
+    }
+
+    /* ==================================================
+       REFERENCE
+       ================================================== */
+
+    .reference {
+      margin-top: 22px;
+      padding-top: 16px;
+
+      border-top: 1px solid var(--border);
+    }
+
+    .reference-title {
+      margin-bottom: 10px;
+
+      text-align: center;
+
+      color: var(--muted);
+
+      font-size: 0.78rem;
+      font-weight: 700;
+
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .reference-grid {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .reference-chip {
+      padding: 7px 10px;
+
+      border: 1px solid var(--border);
+      border-radius: 8px;
+
+      background: var(--panel);
+
+      color: var(--muted);
+
+      font-size: 0.84rem;
+    }
+
+    .reference-chip strong {
+      color: var(--text);
+
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+      font-size: 0.95rem;
+    }
+
+    /* ==================================================
+       RESPONSIVE
+       ================================================== */
+
+    @media (max-width: 650px) {
+
+      .app {
+        width: min(100% - 20px, 900px);
+        margin: 20px auto;
+      }
+
+      .settings-card {
+        padding: 17px 14px;
+      }
+
+      .practice-card {
+        padding: 22px 15px 24px;
+      }
+
+      .roman-step {
+        grid-template-columns: 1fr;
+
+        text-align: center;
+      }
+
+      .step-value {
+        text-align: center;
+      }
+
+      .step-arrow {
+        display: none;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+<main class="app">
+
+  <!-- ==================================================
+       RANGE SELECTION
+       ================================================== -->
+
+  <section class="card settings-card">
+
+    <div class="section-label">
+      Choose the numbers you want included
+    </div>
+
+    <div
+      id="rangeButtons"
+      class="range-buttons">
+
+      <button
+        type="button"
+        class="range-button active"
+        data-max="100">
+        1–100
+      </button>
+
+      <button
+        type="button"
+        class="range-button"
+        data-max="500">
+        1–500
+      </button>
+
+      <button
+        type="button"
+        class="range-button"
+        data-max="1000">
+        1–1,000
+      </button>
+
+      <button
+        type="button"
+        class="range-button"
+        data-max="3999">
+        1–3,999
+      </button>
+
+    </div>
+
+    <div class="settings-note">
+      Standard Roman numeral notation is used, including
+      IV, IX, XL, XC, CD, and CM.
+    </div>
+
+  </section>
+
+
+  <!-- ==================================================
+       PRACTICE
+       ================================================== -->
+
+  <section class="card practice-card">
+
+    <div class="instruction">
+      Write this number as a Roman numeral.
+    </div>
+
+
+    <div class="number-area">
+
+      <div
+        id="problemNumber"
+        class="problem-number">
+      </div>
+
+    </div>
+
+
+    <label
+      class="answer-label"
+      for="answerInput">
+      Roman numeral
+    </label>
+
+
+    <div class="answer-area">
+
+      <input
+        id="answerInput"
+        class="answer-input"
+        type="text"
+        autocomplete="off"
+        autocapitalize="characters"
+        spellcheck="false"
+        placeholder="e.g. XLVII">
+
+    </div>
+
+
+    <div class="controls">
+
+      <button
+        id="checkButton"
+        class="control-button check-button"
+        type="button">
+        Check Answer
+      </button>
+
+      <button
+        id="nextButton"
+        class="control-button next-button"
+        type="button">
+        Next Question
+      </button>
+
+    </div>
+
+
+    <div
+      id="feedback"
+      class="feedback"
+      aria-live="polite">
+    </div>
+
+
+    <!-- ==================================================
+         REFERENCE
+         ================================================== -->
+
+    <div class="reference">
+
+      <div class="reference-title">
+        Roman Numeral Reference
+      </div>
+
+      <div class="reference-grid">
+
+        <span class="reference-chip">
+          <strong>I</strong> = 1
+        </span>
+
+        <span class="reference-chip">
+          <strong>V</strong> = 5
+        </span>
+
+        <span class="reference-chip">
+          <strong>X</strong> = 10
+        </span>
+
+        <span class="reference-chip">
+          <strong>L</strong> = 50
+        </span>
+
+        <span class="reference-chip">
+          <strong>C</strong> = 100
+        </span>
+
+        <span class="reference-chip">
+          <strong>D</strong> = 500
+        </span>
+
+        <span class="reference-chip">
+          <strong>M</strong> = 1,000
+        </span>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<script>
+
+(() => {
+
+  /*
+    ==================================================
+    DOM
+    ==================================================
+  */
+
+  const rangeButtons =
+    [
+      ...document.querySelectorAll(
+        ".range-button"
+      )
+    ];
+
+
+  const problemNumberElement =
+    document.getElementById(
+      "problemNumber"
+    );
+
+
+  const answerInput =
+    document.getElementById(
+      "answerInput"
+    );
+
+
+  const checkButton =
+    document.getElementById(
+      "checkButton"
+    );
+
+
+  const nextButton =
+    document.getElementById(
+      "nextButton"
+    );
+
+
+  const feedbackElement =
+    document.getElementById(
+      "feedback"
+    );
+
+
+  /*
+    ==================================================
+    ROMAN NUMERAL VALUES
+    ==================================================
+  */
+
+  const romanValues = [
+
+    [1000, "M"],
+
+    [900, "CM"],
+
+    [500, "D"],
+
+    [400, "CD"],
+
+    [100, "C"],
+
+    [90, "XC"],
+
+    [50, "L"],
+
+    [40, "XL"],
+
+    [10, "X"],
+
+    [9, "IX"],
+
+    [5, "V"],
+
+    [4, "IV"],
+
+    [1, "I"]
+
+  ];
+
+
+  /*
+    ==================================================
+    STATE
+    ==================================================
+  */
+
+  let maximum =
+    100;
+
+
+  let currentNumber =
+    1;
+
+
+  let correctRoman =
+    "I";
+
+
+  let previousNumber =
+    null;
+
+
+  /*
+    ==================================================
+    CONVERT TO ROMAN NUMERAL
+    ==================================================
+  */
+
+  function toRoman(
+    value
+  ) {
+
+    let remaining =
+      value;
+
+
+    let result =
+      "";
+
+
+    for (
+      const [
+        amount,
+        symbol
+      ]
+      of romanValues
+    ) {
+
+      while (
+        remaining >=
+        amount
+      ) {
+
+        result +=
+          symbol;
+
+
+        remaining -=
+          amount;
+
+      }
+
+    }
+
+
+    return result;
+
+  }
+
+
+  /*
+    ==================================================
+    GENERATE NUMBER
+    ==================================================
+  */
+
+  function generateNumber() {
+
+    let value;
+
+
+    do {
+
+      value =
+        1 +
+        Math.floor(
+          Math.random() *
+          maximum
+        );
+
+    }
+
+    while (
+      maximum >
+        1 &&
+      value ===
+        previousNumber
+    );
+
+
+    return value;
+
+  }
+
+
+  /*
+    ==================================================
+    BREAK NUMBER INTO ROMAN VALUES
+    ==================================================
+  */
+
+  function decomposeNumber(
+    value
+  ) {
+
+    let remaining =
+      value;
+
+
+    const parts =
+      [];
+
+
+    for (
+      const [
+        amount,
+        symbol
+      ]
+      of romanValues
+    ) {
+
+      while (
+        remaining >=
+        amount
+      ) {
+
+        parts.push({
+
+          amount:
+            amount,
+
+          symbol:
+            symbol
+
+        });
+
+
+        remaining -=
+          amount;
+
+      }
+
+    }
+
+
+    return parts;
+
+  }
+
+
+  /*
+    ==================================================
+    BUILD EXPLANATION
+    ==================================================
+  */
+
+  function buildExplanation() {
+
+    const rawParts =
+      decomposeNumber(
+        currentNumber
+      );
+
+
+    /*
+      Combine repeated values.
+
+      Example:
+      30 becomes
+
+      3 × 10 → XXX
+
+      rather than three separate rows.
+    */
+
+    const grouped =
+      [];
+
+
+    rawParts.forEach(
+      part => {
+
+        const previous =
+          grouped[
+            grouped.length - 1
+          ];
+
+
+        if (
+          previous &&
+          previous.amount ===
+            part.amount &&
+          previous.symbol ===
+            part.symbol
+        ) {
+
+          previous.count++;
+
+        }
+
+        else {
+
+          grouped.push({
+
+            amount:
+              part.amount,
+
+            symbol:
+              part.symbol,
+
+            count:
+              1
+
+          });
+
+        }
+
+      }
+    );
+
+
+    let rows =
+      "";
+
+
+    grouped.forEach(
+      part => {
+
+        const valueDisplay =
+          part.count >
+          1
+
+            ? `${part.count} × ${part.amount}`
+
+            : `${part.amount}`;
+
+
+        const symbolDisplay =
+          part.symbol.repeat(
+            part.count
+          );
+
+
+        rows +=
+          `
+            <div class="roman-step">
+
+              <div class="step-value">
+                ${valueDisplay}
+              </div>
+
+              <div class="step-arrow">
+                →
+              </div>
+
+              <div class="step-symbol">
+                ${symbolDisplay}
+              </div>
+
+            </div>
+          `;
+
+      }
+    );
+
+
+    const numberPieces =
+      grouped.map(
+        part => {
+
+          if (
+            part.count >
+            1
+          ) {
+
+            return (
+              `${part.count} × ${part.amount}`
+            );
+
+          }
+
+
+          return (
+            `${part.amount}`
+          );
+
+        }
+      );
+
+
+    return `
+      <div class="explanation">
+
+        <div class="explanation-title">
+          Break ${currentNumber.toLocaleString("en-US")}
+          into Roman-numeral values:
+        </div>
+
+        <div class="roman-steps">
+          ${rows}
+        </div>
+
+        <div class="final-result">
+
+          ${numberPieces.join(" + ")}
+          =
+          ${currentNumber.toLocaleString("en-US")}
+
+          <br>
+
+          So
+
+          ${currentNumber.toLocaleString("en-US")}
+          =
+
+          <span class="roman-text">
+            ${correctRoman}
+          </span>
+
+        </div>
+
+      </div>
+    `;
+
+  }
+
+
+  /*
+    ==================================================
+    NEW QUESTION
+    ==================================================
+  */
+
+  function newQuestion() {
+
+    currentNumber =
+      generateNumber();
+
+
+    previousNumber =
+      currentNumber;
+
+
+    correctRoman =
+      toRoman(
+        currentNumber
+      );
+
+
+    problemNumberElement.textContent =
+      currentNumber.toLocaleString(
+        "en-US"
+      );
+
+
+    answerInput.value =
+      "";
+
+
+    answerInput.disabled =
+      false;
+
+
+    answerInput.classList.remove(
+      "correct-input",
+      "incorrect-input"
+    );
+
+
+    checkButton.disabled =
+      false;
+
+
+    feedbackElement.className =
+      "feedback";
+
+
+    feedbackElement.innerHTML =
+      "";
+
+
+    answerInput.focus();
+
+  }
+
+
+  /*
+    ==================================================
+    NORMALIZE STUDENT ANSWER
+    ==================================================
+  */
+
+  function normalizeRoman(
+    value
+  ) {
+
+    return value
+      .toUpperCase()
+      .replace(
+        /\s+/g,
+        ""
+      );
+
+  }
+
+
+  /*
+    ==================================================
+    CHECK ANSWER
+    ==================================================
+  */
+
+  function checkAnswer() {
+
+    const studentAnswer =
+      normalizeRoman(
+        answerInput.value
+      );
+
+
+    /*
+      Blank.
+    */
+
+    if (
+      studentAnswer ===
+      ""
+    ) {
+
+      feedbackElement.className =
+        "feedback incorrect";
+
+
+      feedbackElement.innerHTML =
+        `
+          <div class="feedback-heading">
+
+            <strong>
+              Enter a Roman numeral first.
+            </strong>
+
+          </div>
+        `;
+
+
+      return;
+
+    }
+
+
+    /*
+      Invalid Roman numeral characters.
+    */
+
+    if (
+      !/^[IVXLCDM]+$/.test(
+        studentAnswer
+      )
+    ) {
+
+      answerInput.classList.add(
+        "incorrect-input"
+      );
+
+
+      feedbackElement.className =
+        "feedback incorrect";
+
+
+      feedbackElement.innerHTML =
+        `
+          <div class="feedback-heading">
+
+            <strong>
+              Check the symbols you entered.
+            </strong>
+
+            Roman numerals in this activity use only
+            I, V, X, L, C, D, and M.
+
+          </div>
+
+          ${buildExplanation()}
+        `;
+
+
+      return;
+
+    }
+
+
+    /*
+      Correct.
+    */
+
+    if (
+      studentAnswer ===
+      correctRoman
+    ) {
+
+      answerInput.classList.remove(
+        "incorrect-input"
+      );
+
+
+      answerInput.classList.add(
+        "correct-input"
+      );
+
+
+      feedbackElement.className =
+        "feedback correct";
+
+
+      feedbackElement.innerHTML =
+        `
+          <strong>
+            ✓ Correct!
+          </strong>
+
+          ${currentNumber.toLocaleString("en-US")}
+          =
+
+          <span class="roman-text">
+            ${correctRoman}
+          </span>.
+        `;
+
+
+      answerInput.disabled =
+        true;
+
+
+      checkButton.disabled =
+        true;
+
+
+      return;
+
+    }
+
+
+    /*
+      Incorrect.
+    */
+
+    answerInput.classList.remove(
+      "correct-input"
+    );
+
+
+    answerInput.classList.add(
+      "incorrect-input"
+    );
+
+
+    feedbackElement.className =
+      "feedback incorrect";
+
+
+    feedbackElement.innerHTML =
+      `
+        <div class="feedback-heading">
+
+          <strong>
+            Not quite.
+          </strong>
+
+          <span class="roman-text">
+            ${studentAnswer}
+          </span>
+
+          is not the standard Roman numeral for
+          ${currentNumber.toLocaleString("en-US")}.
+
+        </div>
+
+        ${buildExplanation()}
+      `;
+
+  }
+
+
+  /*
+    ==================================================
+    RANGE BUTTONS
+    ==================================================
+  */
+
+  rangeButtons.forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+
+        function () {
+
+          maximum =
+            Number(
+              button.dataset.max
+            );
+
+
+          rangeButtons.forEach(
+            otherButton => {
+
+              otherButton.classList.toggle(
+                "active",
+                otherButton ===
+                  button
+              );
+
+            }
+          );
+
+
+          newQuestion();
+
+        }
+
+      );
+
+    }
+  );
+
+
+  /*
+    ==================================================
+    INPUT
+    ==================================================
+  */
+
+  answerInput.addEventListener(
+    "input",
+
+    function () {
+
+      /*
+        Automatically capitalize and
+        allow only Roman numeral symbols.
+      */
+
+      answerInput.value =
+        answerInput.value
+          .toUpperCase()
+          .replace(
+            /[^IVXLCDM]/g,
+            ""
+          );
+
+
+      answerInput.classList.remove(
+        "correct-input",
+        "incorrect-input"
+      );
+
+
+      feedbackElement.className =
+        "feedback";
+
+
+      feedbackElement.innerHTML =
+        "";
+
+    }
+  );
+
+
+  answerInput.addEventListener(
+    "keydown",
+
+    function (
+      event
+    ) {
+
+      if (
+        event.key ===
+        "Enter"
+      ) {
+
+        event.preventDefault();
+
+        checkAnswer();
+
+      }
+
+    }
+  );
+
+
+  /*
+    ==================================================
+    BUTTONS
+    ==================================================
+  */
+
+  checkButton.addEventListener(
+    "click",
+    checkAnswer
+  );
+
+
+  nextButton.addEventListener(
+    "click",
+    newQuestion
+  );
+
+
+  /*
+    ==================================================
+    START
+    ==================================================
+  */
+
+  newQuestion();
+
+})();
+</script>
+
+</body>
+</html>
